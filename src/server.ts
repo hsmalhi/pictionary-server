@@ -54,4 +54,17 @@ io.on("connection", function(socket: any) {
     rooms[message.code] = socket.id;
     socket.emit("ROOM_CREATED", message);
   });
+
+  socket.on("coordinates", function(message: any) {
+    let roomName = `${message.room}0`;
+    io.to(roomName).emit(`coordinates${message.side}`, message);
+  });
+  socket.on("clear", function(message: any) {
+    let roomName = `${message.room}0`;
+    io.to(roomName).emit(`clear${message.side}`, message);
+  });
+  socket.on("stop", function(message: any) {
+    let roomName = `${message.room}0`;
+    io.to(roomName).emit(`stop${message.side}`, message);
+  });
 });
