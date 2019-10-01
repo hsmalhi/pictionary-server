@@ -6,7 +6,7 @@ import * as path from "path";
 const app = express();
 app.set("port", process.env.PORT || 3001);
 
-var http = require("http").Server(app);
+let http = require("http").Server(app);
 // set up socket.io and bind it to our
 // http server.
 let io = require("socket.io")(http);
@@ -14,13 +14,13 @@ let io = require("socket.io")(http);
 let rooms: any = {};
 
 const generateCode = function(): string {
-  var code: string = "";
-  var codeGenerated: boolean = false;
+  let code: string = "";
+  let codeGenerated: boolean = false;
 
   do {
-    var characters: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var charactersLength = characters.length;
-    for (var i = 0; i < 3; i++) {
+    let characters: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let charactersLength = characters.length;
+    for (let i = 0; i < 3; i++) {
       code += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     if (!rooms[code]) {
