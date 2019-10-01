@@ -11,10 +11,30 @@ var http = require("http").Server(app);
 // http server.
 let io = require("socket.io")(http);
 
+let rooms: any = {};
+
+const generateCode = function(): string {
+  var code: string = "";
+  var codeGenerated: boolean = false;
+
+  do {
+    var characters: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var charactersLength = characters.length;
+    for (var i = 0; i < 3; i++) {
+      code += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    if (!rooms[code]) {
+      codeGenerated = true;
+    }
+  } while (!codeGenerated);
+
+  return code;
+};
+
 // simple '/' endpoint sending a Hello World
 // response
 app.get("/", (req: any, res: any) => {
-  res.send("hello world");
+  res.send(rooms);
 });
 
 // start our simple server up on localhost:3000
@@ -22,12 +42,16 @@ const server = http.listen(3001, function() {
   console.log("listening on *:3001");
 });
 
-// app.get("/", (req: any, res: any) => {
-//   res.sendFile(path.resolve("./client/index.html"));
-// });
-
 // whenever a user connects on port 3000 via
 // a websocket, log that a user has connected
 io.on("connection", function(socket: any) {
   console.log("a user connected");
+
+  socket.on("SETUP", () => {
+    let message = {
+      code: generateCode()
+    };
+    rooms[message.code] = socket.id;
+    socket.emit("ROOM_CREATED", message);
+  });
 });
