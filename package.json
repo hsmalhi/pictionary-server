@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "tsc": "tsc",
-    "postinstall": "npm run tsc",
+    "postinstall": "watch",
     "watch-ts": "tsc -w",
     "watch-node": "nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript, Node\" -c \"yello.bold, cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
