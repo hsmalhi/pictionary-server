@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  
+    "build": "tsc",
     "tsc": "tsc",
     "postinstall": "npm run tsc",
+    "start": "node dist/app.js",
     "watch-ts": "tsc -w",
     "watch-node": "nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript, Node\" -c \"yello.bold, cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
@@ -24,6 +25,7 @@
     "express": "^4.17.1",
     "nodemon": "^1.19.3",
     "socket.io": "^2.3.0",
-    "tslint": "^5.9.1"
+    "tslint": "^5.9.1",
+    "typescript": "^3.6.3"
   }
 }
