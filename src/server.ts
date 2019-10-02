@@ -38,8 +38,8 @@ app.get("/", (req: any, res: any) => {
 });
 
 // start our simple server up on localhost:3000
-const server = http.listen(3001, function() {
-  console.log("listening on *:3001");
+const server = http.listen(process.env.PORT || 3001, function() {
+  console.log("listening on " , process.env.PORT || "3001" );
 });
 
 // whenever a user connects on port 3000 via
