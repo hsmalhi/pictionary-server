@@ -2,7 +2,7 @@
   "name": "pictionary-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
     "build-ts": "tsc",
     "postinstall": "npm run build-ts",
