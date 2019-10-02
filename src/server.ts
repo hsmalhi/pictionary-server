@@ -38,8 +38,8 @@ app.get("/", (req: any, res: any) => {
 });
 
 // start our simple server up on localhost:3000
-const server = http.listen(3001, function() {
-  console.log("listening on *:3001");
+const server = http.listen(process.env.PORT || 3001, function() {
+  console.log("listening on " , process.env.PORT || "3001" );
 });
 
 // whenever a user connects on port 3000 via
@@ -53,5 +53,18 @@ io.on("connection", function(socket: any) {
     };
     rooms[message.code] = socket.id;
     socket.emit("ROOM_CREATED", message);
+  });
+
+  socket.on("coordinates", function(message: any) {
+    let roomName = `${message.room}0`;
+    io.to(roomName).emit(`coordinates${message.side}`, message);
+  });
+  socket.on("clear", function(message: any) {
+    let roomName = `${message.room}0`;
+    io.to(roomName).emit(`clear${message.side}`, message);
+  });
+  socket.on("stop", function(message: any) {
+    let roomName = `${message.room}0`;
+    io.to(roomName).emit(`stop${message.side}`, message);
   });
 });
