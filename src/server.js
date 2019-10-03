@@ -113,7 +113,7 @@ io.on("connection", function (socket) {
         if (rightDrawer === null) {
             rightDrawer = players[1];
         }
-        var timer = 45;
+        var timer = 90005;
         var outMessage = {
             timer: timer,
             leftDrawer: leftDrawer,

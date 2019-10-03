@@ -52,17 +52,14 @@ io.on("connection", function(socket: any) {
   let rightDrawer: number = null;
 
   socket.on("coordinates", function(message: any) {
-    let roomName = `${message.room}`;
     io.emit("coordinates", message);
     // io.to(roomName).emit("coordinates", message);
   });
   socket.on("clear", function(message: any) {
-    let roomName = `${message.room}`;
     // io.to(roomName).emit("clear", message);
     io.emit("clear", message);
   });
   socket.on("stop", function(message: any) {
-    let roomName = `${message.room}`;
     io.emit("stop", message);
     // io.to(roomName).emit("stop", message);
   });
@@ -143,7 +140,7 @@ io.on("connection", function(socket: any) {
   const startRound = (code: string) => {
     console.log(leftDrawer + "---" + rightDrawer);
 
-    const timer = 5;
+    const timer = 10000;
     const outMessage = {
       timer
     }
