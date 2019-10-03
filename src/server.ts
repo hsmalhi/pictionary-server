@@ -97,8 +97,17 @@ io.on("connection", function(socket: any) {
       };
       socket.emit("ROOM_JOINED", outMessage);
       socket.join(message.code, function() {
+
+        const players = rooms[message.code].map((player: any) => {
+
+          return {
+            id: Object.keys(player)[0],
+            name: player[Object.keys(player)[0]].name
+          }
+        });
+
         const roomMessage = {
-          players: rooms[message.code]
+          players
         };
         io.in(message.code).emit("PLAYER_UPDATE", roomMessage);
       });
