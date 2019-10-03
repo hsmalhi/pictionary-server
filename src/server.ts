@@ -193,6 +193,10 @@ io.on("connection", function(socket: any) {
     }, timer * 1000);
   });
 
+  socket.on("SCORE", (message: any) => {
+    rooms[message.code].players[message.playerId][message.playerId].score++
+  });
+
   const startRound = (code: string) => {
     console.log(leftDrawer + "---" + rightDrawer);
 
