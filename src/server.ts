@@ -41,45 +41,43 @@ app.get("/", (req: any, res: any) => {
 
 // start our simple server up on localhost:3000
 const server = http.listen(process.env.PORT || 3001, function() {
-  console.log("listening on " , process.env.PORT || "3001" );
+  console.log("listening on ", process.env.PORT || "3001");
 });
 
 // whenever a user connects on port 3000 via
 // a websocket, log that a user has connected
 io.on("connection", function(socket: any) {
   console.log("a user connected", socket.id);
-
   let players: any[] = [];
   let leftDrawer: number = null;
   let rightDrawer: number = null;
 
+  socket.on("coordinates", function(message: any) {
+    let roomName = `${message.room}`;
+    io.emit("coordinates", message);
+    // io.to(roomName).emit("coordinates", message);
+  });
+  socket.on("clear", function(message: any) {
+    let roomName = `${message.room}`;
+    // io.to(roomName).emit("clear", message);
+    io.emit("clear", message);
+  });
+  socket.on("stop", function(message: any) {
+    let roomName = `${message.room}`;
+    io.emit("stop", message);
+    // io.to(roomName).emit("stop", message);
+  });
   socket.on("SETUP", () => {
     let message = {
       code: generateCode()
     };
-    rooms[message.code] = [ { 0: { id: socket.id, name: "MAIN" } } ];
+    rooms[message.code] = [{ 0: { id: socket.id, name: "MAIN" } }];
     socket.emit("ROOM_CREATED", message);
     socket.join(message.code);
   });
 
-  socket.on("coordinates", function(message: any) {
-    let roomName = `${message.room}0`;
-    io.to(roomName).emit(`coordinates${message.side}`, message);
-  });
-  
-  socket.on("clear", function(message: any) {
-    let roomName = `${message.room}0`;
-    io.to(roomName).emit(`clear${message.side}`, message);
-  });
-
-  socket.on("stop", function(message: any) {
-    let roomName = `${message.room}0`;
-    io.to(roomName).emit(`stop${message.side}`, message);
-  });
-
   socket.on("JOIN", (message: any) => {
-
-    if(!rooms[message.code]) {
+    if (!rooms[message.code]) {
       const outMessage = {
         error: "This room does not exist"
       };
@@ -89,21 +87,22 @@ io.on("connection", function(socket: any) {
         error: "This room has reached maximum capacity"
       };
       socket.emit("ROOM_JOINED", outMessage);
-    }
-    else {
+    } else {
       const playerId = rooms[message.code].length;
       const playerName = message.name;
-      rooms[message.code].push({ [playerId]: { id: socket.id, name: playerName} });
+      rooms[message.code].push({
+        [playerId]: { id: socket.id, name: playerName }
+      });
 
       const outMessage = {
         playerId
       };
       socket.emit("ROOM_JOINED", outMessage);
-      socket.join(message.code,function(){ 
+      socket.join(message.code, function() {
         const roomMessage = {
           players: rooms[message.code]
-        }    
-         io.in(message.code).emit("PLAYER_UPDATE", roomMessage);
+        };
+        io.in(message.code).emit("PLAYER_UPDATE", roomMessage);
       });
     }
   });
@@ -113,9 +112,9 @@ io.on("connection", function(socket: any) {
     const outMessage = {
       timer,
       socketid: socket.id
-    }
+    };
 
-    console.log(io.sockets.adapter.rooms[message.code].sockets)
+    console.log(io.sockets.adapter.rooms[message.code].sockets);
 
     io.sockets.in(message.code).emit("STARTING_GAME", outMessage);
 
@@ -123,11 +122,11 @@ io.on("connection", function(socket: any) {
 
     setTimeout(function() {
       startRound(message.code);
-    }, timer*1000)
+    }, timer * 1000);
   });
 
   const startRound = (code: string) => {
-    if (leftDrawer === null ) {
+    if (leftDrawer === null) {
       leftDrawer = players[0];
     }
 
@@ -140,20 +139,8 @@ io.on("connection", function(socket: any) {
       timer,
       leftDrawer: leftDrawer,
       rightDrawer: rightDrawer
-    }
+    };
 
     io.in(code).emit("ROUND_START", outMessage);
-  }
-  socket.on("coordinates", function(message: any) {
-    let roomName = `${message.room}0`;
-    io.to(roomName).emit(`coordinates${message.side}`, message);
-  });
-  socket.on("clear", function(message: any) {
-    let roomName = `${message.room}0`;
-    io.to(roomName).emit(`clear${message.side}`, message);
-  });
-  socket.on("stop", function(message: any) {
-    let roomName = `${message.room}0`;
-    io.to(roomName).emit(`stop${message.side}`, message);
-  });
+  };
 });
