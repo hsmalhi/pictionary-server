@@ -13,7 +13,6 @@ let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
 let rooms: any = {};
-let rounds: number = 6;
 
 const generateCode = function(): string {
   let code: string = "";
@@ -69,9 +68,10 @@ io.on("connection", function(socket: any) {
   });
   socket.on("SETUP", () => {
     let message = {
-      code: generateCode()
+      code: generateCode(),
+      playerId: 0
     };
-    rooms[message.code] = [{ 0: { id: socket.id, name: "MAIN" } }];
+    rooms[message.code] = [ { 0: { id: socket.id, name: "MAIN", score: 0 } } ];
     socket.emit("ROOM_CREATED", message);
     socket.join(message.code);
   });
@@ -82,7 +82,7 @@ io.on("connection", function(socket: any) {
         error: "This room does not exist"
       };
       socket.emit("ROOM_JOINED", outMessage);
-    } else if (rooms[message.code].length >= 8) {
+    } else if (rooms[message.code].length >= 9) {
       const outMessage = {
         error: "This room has reached maximum capacity"
       };
@@ -90,9 +90,7 @@ io.on("connection", function(socket: any) {
     } else {
       const playerId = rooms[message.code].length;
       const playerName = message.name;
-      rooms[message.code].push({
-        [playerId]: { id: socket.id, name: playerName }
-      });
+      rooms[message.code].push({ [playerId]: { id: socket.id, name: playerName, score: 0 } });
 
       const outMessage = {
         playerId
@@ -109,16 +107,24 @@ io.on("connection", function(socket: any) {
 
   socket.on("START_GAME", (message: any) => {
     const timer = 5;
-    const outMessage = {
-      timer,
-      socketid: socket.id
+    
+    players = rooms[message.code].slice(1);
+
+    if (leftDrawer === null ) {
+      leftDrawer = Number(Object.keys(players[0])[0]);
     };
 
-    console.log(io.sockets.adapter.rooms[message.code].sockets);
+    if (rightDrawer === null) {
+      rightDrawer = Number(Object.keys(players[1])[0]);
+    };
+
+    const outMessage = {
+      timer,
+      leftDrawer: leftDrawer,
+      rightDrawer: rightDrawer
+    }
 
     io.sockets.in(message.code).emit("STARTING_GAME", outMessage);
-
-    players = rooms[message.code].splice(0, 1);
 
     setTimeout(function() {
       startRound(message.code);
@@ -126,21 +132,47 @@ io.on("connection", function(socket: any) {
   });
 
   const startRound = (code: string) => {
-    if (leftDrawer === null) {
-      leftDrawer = players[0];
-    }
+    console.log(leftDrawer + "---" + rightDrawer);
 
-    if (rightDrawer === null) {
-      rightDrawer = players[1];
-    }
-
-    const timer = 45;
+    const timer = 5;
     const outMessage = {
-      timer,
-      leftDrawer: leftDrawer,
-      rightDrawer: rightDrawer
-    };
+      timer
+    }
 
     io.in(code).emit("ROUND_START", outMessage);
-  };
+    
+    setTimeout(function() {
+      if (leftDrawer === Number(Object.keys(players[players.length - 1])[0])) {
+        endGame(code);
+      } else {
+        endRound(code);
+      } 
+    }, timer*1000)
+  }
+
+  const endRound = (code: string) => {
+    const timer = 5;
+    if (rightDrawer === Number(Object.keys(players[players.length - 1])[0])) {
+      leftDrawer = rightDrawer;
+      rightDrawer = Number(Object.keys(players[0])[0]);
+    } else {
+      leftDrawer = rightDrawer;
+      rightDrawer = rightDrawer + 1;
+    }
+    const outMessage = {
+      timer,
+      leftDrawer,
+      rightDrawer
+    }
+
+    io.in(code).emit("ROUND_OVER", outMessage);
+
+    setTimeout(function () {
+      startRound(code);
+    }, timer*1000);
+  }
+
+  const endGame = (code: string) => {
+    io.in(code).emit("GAME_OVER");
+  }
 });
