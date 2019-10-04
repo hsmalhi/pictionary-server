@@ -98,8 +98,6 @@ io.on("connection", function(socket: Socket) {
   }
 
   socket.on("coordinates", function(message: drawingMessage) {
-    console.log(rooms)
-    console.log(message)
     io.to(`${rooms[message.room].players[0][0].id}`).emit(`coordinates${message.side}`, message);
   });
 
