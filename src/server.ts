@@ -52,23 +52,20 @@ io.on("connection", function(socket: any) {
   let rightDrawer: number = null;
 
   socket.on("coordinates", function(message: any) {
-    io.emit("coordinates", message);
-    // io.to(roomName).emit("coordinates", message);
+    io.to(`${rooms[message.room][0][0].id}`).emit(`coordinates${message.side}`,message);
   });
   socket.on("clear", function(message: any) {
-    // io.to(roomName).emit("clear", message);
-    io.emit("clear", message);
+    io.to(`${rooms[message.room][0][0].id}`).emit(`clear${message.side}`, message);
   });
   socket.on("stop", function(message: any) {
-    io.emit("stop", message);
-    // io.to(roomName).emit("stop", message);
+    io.to(`${rooms[message.room][0][0].id}`).emit(`stop${message.side}`, message);
   });
   socket.on("SETUP", () => {
     let message = {
       code: generateCode(),
       playerId: 0
     };
-    rooms[message.code] = [ { 0: { id: socket.id, name: "MAIN", score: 0 } } ];
+    rooms[message.code] = [{ 0: { id: socket.id, name: "MAIN", score: 0 } }];
     socket.emit("ROOM_CREATED", message);
     socket.join(message.code);
   });
@@ -87,20 +84,20 @@ io.on("connection", function(socket: any) {
     } else {
       const playerId = rooms[message.code].length;
       const playerName = message.name;
-      rooms[message.code].push({ [playerId]: { id: socket.id, name: playerName, score: 0 } });
+      rooms[message.code].push({
+        [playerId]: { id: socket.id, name: playerName, score: 0 }
+      });
 
       const outMessage = {
         playerId
       };
       socket.emit("ROOM_JOINED", outMessage);
       socket.join(message.code, function() {
-
         const players = rooms[message.code].map((player: any) => {
-
           return {
             id: Object.keys(player)[0],
             name: player[Object.keys(player)[0]].name
-          }
+          };
         });
 
         const roomMessage = {
@@ -113,22 +110,22 @@ io.on("connection", function(socket: any) {
 
   socket.on("START_GAME", (message: any) => {
     const timer = 5;
-    
+
     players = rooms[message.code].slice(1);
 
-    if (leftDrawer === null ) {
+    if (leftDrawer === null) {
       leftDrawer = Number(Object.keys(players[0])[0]);
-    };
+    }
 
     if (rightDrawer === null) {
       rightDrawer = Number(Object.keys(players[1])[0]);
-    };
+    }
 
     const outMessage = {
       timer,
       leftDrawer: leftDrawer,
       rightDrawer: rightDrawer
-    }
+    };
 
     io.sockets.in(message.code).emit("STARTING_GAME", outMessage);
 
@@ -143,18 +140,18 @@ io.on("connection", function(socket: any) {
     const timer = 10000;
     const outMessage = {
       timer
-    }
+    };
 
     io.in(code).emit("ROUND_START", outMessage);
-    
+
     setTimeout(function() {
       if (leftDrawer === Number(Object.keys(players[players.length - 1])[0])) {
         endGame(code);
       } else {
         endRound(code);
-      } 
-    }, timer*1000)
-  }
+      }
+    }, timer * 1000);
+  };
 
   const endRound = (code: string) => {
     const timer = 5;
@@ -169,16 +166,16 @@ io.on("connection", function(socket: any) {
       timer,
       leftDrawer,
       rightDrawer
-    }
+    };
 
     io.in(code).emit("ROUND_OVER", outMessage);
 
-    setTimeout(function () {
+    setTimeout(function() {
       startRound(code);
-    }, timer*1000);
-  }
+    }, timer * 1000);
+  };
 
   const endGame = (code: string) => {
     io.in(code).emit("GAME_OVER");
-  }
+  };
 });
