@@ -1,8 +1,9 @@
 // src/server.ts
 import * as express from "express";
+import { Socket } from "socket.io";
+
 import * as socketio from "socket.io";
 import * as path from "path";
-import { isNull } from "util";
 
 const app = express();
 app.set("port", process.env.PORT || 3001);
@@ -45,19 +46,25 @@ const server = http.listen(process.env.PORT || 3001, function() {
 
 // whenever a user connects on port 3000 via
 // a websocket, log that a user has connected
-io.on("connection", function(socket: any) {
+io.on("connection", function(socket: Socket) {
   console.log("a user connected", socket.id);
   let players: any[] = [];
   let leftDrawer: number = null;
   let rightDrawer: number = null;
 
-  socket.on("coordinates", function(message: any) {
+  
+  type drawingMessage={
+    room:string;
+    side:string;
+  }
+  
+  socket.on("coordinates", function(message: drawingMessage) {
     io.to(`${rooms[message.room][0][0].id}`).emit(`coordinates${message.side}`,message);
   });
-  socket.on("clear", function(message: any) {
+  socket.on("clear", function(message: drawingMessage) {
     io.to(`${rooms[message.room][0][0].id}`).emit(`clear${message.side}`, message);
   });
-  socket.on("stop", function(message: any) {
+  socket.on("stop", function(message: drawingMessage) {
     io.to(`${rooms[message.room][0][0].id}`).emit(`stop${message.side}`, message);
   });
   socket.on("SETUP", () => {
@@ -69,6 +76,7 @@ io.on("connection", function(socket: any) {
     socket.emit("ROOM_CREATED", message);
     socket.join(message.code);
   });
+
 
   socket.on("JOIN", (message: any) => {
     if (!rooms[message.code]) {
@@ -137,7 +145,7 @@ io.on("connection", function(socket: any) {
   const startRound = (code: string) => {
     console.log(leftDrawer + "---" + rightDrawer);
 
-    const timer = 10000;
+    const timer = 45;
     const outMessage = {
       timer
     };
