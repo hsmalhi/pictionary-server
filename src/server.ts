@@ -57,13 +57,15 @@ io.on("connection", function(socket: Socket) {
     room:string;
     side:string;
   }
-  
+
   socket.on("coordinates", function(message: drawingMessage) {
-    io.to(`${rooms[message.room][0][0].id}`).emit(`coordinates${message.side}`,message);
+    io.to(`${rooms[message.room][0][0].id}`).emit(`coordinates${message.side}`, message);
   });
+
   socket.on("clear", function(message: drawingMessage) {
     io.to(`${rooms[message.room][0][0].id}`).emit(`clear${message.side}`, message);
   });
+
   socket.on("stop", function(message: drawingMessage) {
     io.to(`${rooms[message.room][0][0].id}`).emit(`stop${message.side}`, message);
   });
