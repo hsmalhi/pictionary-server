@@ -15,6 +15,29 @@ let io = require("socket.io")(http);
 
 let rooms: any = {};
 
+let words: string[] = [
+  "star wars",
+  "battle ship",
+  "swimming pool",
+  "bus stop",
+  "fire fly",
+  "tooth paste",
+  "egg rolls",
+  "full moon",
+  "black board",
+  "washing machine",
+  "sun rise",
+  "hair style",
+  "news paper",
+  "door handle",
+  "air plane",
+  "scare crow",
+  "post office",
+  "under world",
+  "bed room",
+  "christmas tree"
+]
+
 const generateCode = function(): string {
   let code: string = "";
   let codeGenerated: boolean = false;
@@ -31,6 +54,22 @@ const generateCode = function(): string {
   } while (!codeGenerated);
 
   return code;
+};
+
+const generateRandomWords = function(n: number): string[] {
+  let random: string[] = [];
+  
+  for (let i = 0; i < n; i++) {
+    let word = words[Math.round(Math.random()*100)%20];
+
+    while (random.includes(word)) {
+      word = words[Math.round(Math.random()*100)%20];
+    }
+
+    random.push(word);
+  }
+
+  return random;
 };
 
 // simple '/' endpoint sending a Hello World
@@ -69,12 +108,19 @@ io.on("connection", function(socket: Socket) {
   socket.on("stop", function(message: drawingMessage) {
     io.to(`${rooms[message.room][0][0].id}`).emit(`stop${message.side}`, message);
   });
+  
   socket.on("SETUP", () => {
     let message = {
       code: generateCode(),
       playerId: 0
     };
-    rooms[message.code] = [{ 0: { id: socket.id, name: "MAIN", score: 0 } }];
+
+    rooms[message.code] = { 
+      players: [{ 0: { id: socket.id, name: "MAIN", score: 0, correct: false } }],
+      words: [],
+      word: null 
+    };
+    
     socket.emit("ROOM_CREATED", message);
     socket.join(message.code);
   });
@@ -86,24 +132,24 @@ io.on("connection", function(socket: Socket) {
         error: "This room does not exist"
       };
       socket.emit("ROOM_JOINED", outMessage);
-    } else if (rooms[message.code].length >= 9) {
+    } else if (rooms[message.code].players.length >= 9) {
       const outMessage = {
         error: "This room has reached maximum capacity"
       };
       socket.emit("ROOM_JOINED", outMessage);
     } else {
-      const playerId = rooms[message.code].length;
+      const playerId = rooms[message.code].players.length;
       const playerName = message.name;
-      rooms[message.code].push({
-        [playerId]: { id: socket.id, name: playerName, score: 0 }
-      });
+      rooms[message.code].players.push({ [playerId]: { id: socket.id, name: playerName, score: 0, correct: false } });
 
       const outMessage = {
         playerId
       };
       socket.emit("ROOM_JOINED", outMessage);
       socket.join(message.code, function() {
-        const players = rooms[message.code].map((player: any) => {
+
+        const players = rooms[message.code].players.map((player: any) => {
+
           return {
             id: Object.keys(player)[0],
             name: player[Object.keys(player)[0]].name
@@ -120,8 +166,10 @@ io.on("connection", function(socket: Socket) {
 
   socket.on("START_GAME", (message: any) => {
     const timer = 5;
-
-    players = rooms[message.code].slice(1);
+    
+    players = rooms[message.code].players.slice(1);
+    rooms[message.code].words = generateRandomWords(players.length);
+    rooms[message.code].word = 0;
 
     if (leftDrawer === null) {
       leftDrawer = Number(Object.keys(players[0])[0]);
@@ -131,17 +179,30 @@ io.on("connection", function(socket: Socket) {
       rightDrawer = Number(Object.keys(players[1])[0]);
     }
 
+    let word = rooms[message.code].words[rooms[message.code].word];
+
     const outMessage = {
       timer,
-      leftDrawer: leftDrawer,
-      rightDrawer: rightDrawer
-    };
+      leftDrawer,
+      rightDrawer,
+      word
+    }
 
     io.sockets.in(message.code).emit("STARTING_GAME", outMessage);
 
     setTimeout(function() {
       startRound(message.code);
     }, timer * 1000);
+  });
+
+  socket.on("SCORE", (message: any) => {
+    rooms[message.code].players[message.playerId][message.playerId].score++;
+
+    const outMessage = {
+      playerId: message.playerId
+    }
+
+    io.sockets.in(message.code).emit("UPDATE_SCORE", outMessage);
   });
 
   const startRound = (code: string) => {
@@ -172,11 +233,17 @@ io.on("connection", function(socket: Socket) {
       leftDrawer = rightDrawer;
       rightDrawer = rightDrawer + 1;
     }
+
+    rooms[code].word++;
+
+    let word = rooms[code].words[rooms[code].word];
+
     const outMessage = {
       timer,
       leftDrawer,
-      rightDrawer
-    };
+      rightDrawer,
+      word
+    }
 
     io.in(code).emit("ROUND_OVER", outMessage);
 
