@@ -3,6 +3,7 @@ import * as express from "express";
 import * as socketio from "socket.io";
 import * as path from "path";
 import { isNull } from "util";
+import { Socket } from "dgram";
 
 const app = express();
 app.set("port", process.env.PORT || 3001);
@@ -115,7 +116,7 @@ io.on("connection", function(socket: any) {
     };
 
     rooms[message.code] = { 
-      players: [{ 0: { id: socket.id, name: "MAIN", score: 0 } }],
+      players: [{ 0: { id: socket.id, name: "MAIN", score: 0, correct: false } }],
       words: [],
       word: null 
     };
@@ -138,7 +139,7 @@ io.on("connection", function(socket: any) {
     } else {
       const playerId = rooms[message.code].players.length;
       const playerName = message.name;
-      rooms[message.code].players.push({ [playerId]: { id: socket.id, name: playerName, score: 0 } });
+      rooms[message.code].players.push({ [playerId]: { id: socket.id, name: playerName, score: 0, correct: false } });
 
       const outMessage = {
         playerId
@@ -194,7 +195,13 @@ io.on("connection", function(socket: any) {
   });
 
   socket.on("SCORE", (message: any) => {
-    rooms[message.code].players[message.playerId][message.playerId].score++
+    rooms[message.code].players[message.playerId][message.playerId].score++;
+
+    const outMessage = {
+      playerId: message.playerId
+    }
+
+    io.sockets.in(message.code).emit("UPDATE_SCORE", outMessage);
   });
 
   const startRound = (code: string) => {
