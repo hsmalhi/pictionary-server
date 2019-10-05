@@ -219,8 +219,31 @@ io.on("connection", function(socket: Socket) {
     io.sockets.in(message.code).emit("UPDATE_SCORE", outMessage);
   });
 
+  socket.on("RESTART_SERVER", (message: any) => {
+    const players = rooms[message.code].players.map((player: any) => {
+      return {
+        ...player,
+        score: 0,
+        correct: false
+      }
+    })
+
+    const words = generateRandomWords(players.length);
+    const word = 0;
+
+    rooms[message.code] = {
+      players,
+      words,
+      word
+    }
+
+    leftDrawer = null;
+    rightDrawer = null;
+
+    io.sockets.in(message.code).emit("RESTART_CLIENT");
+  });
+
   const startRound = (code: string) => {
-    console.log(leftDrawer + "---" + rightDrawer);
 
     const timer = 45;
     const outMessage = {
