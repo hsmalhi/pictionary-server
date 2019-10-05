@@ -205,10 +205,33 @@ io.on("connection", function(socket: Socket) {
     io.sockets.in(message.code).emit("UPDATE_SCORE", outMessage);
   });
 
-  const startRound = (code: string) => {
-    console.log(leftDrawer + "---" + rightDrawer);
+  socket.on("RESTART_SERVER", (message: any) => {
+    const players = rooms[message.code].players.map((player: any) => {
+      return {
+        ...player,
+        score: 0,
+        correct: false
+      }
+    })
 
-    const timer = 45;
+    const words = generateRandomWords(players.length);
+    const word = 0;
+
+    rooms[message.code] = {
+      players,
+      words,
+      word
+    }
+
+    leftDrawer = null;
+    rightDrawer = null;
+
+    io.sockets.in(message.code).emit("RESTART_CLIENT");
+  });
+
+  const startRound = (code: string) => {
+
+    const timer = 5;
     const outMessage = {
       timer
     };
