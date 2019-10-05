@@ -231,7 +231,7 @@ io.on("connection", function(socket: Socket) {
 
   const startRound = (code: string) => {
 
-    const timer = 5;
+    const timer = 45;
     const outMessage = {
       timer
     };
