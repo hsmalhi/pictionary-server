@@ -36,7 +36,7 @@ let words: string[] = [
   "under world",
   "bed room",
   "christmas tree"
-]
+];
 
 const generateCode = function(): string {
   let code: string = "";
@@ -58,12 +58,12 @@ const generateCode = function(): string {
 
 const generateRandomWords = function(n: number): string[] {
   let random: string[] = [];
-  
+
   for (let i = 0; i < n; i++) {
-    let word = words[Math.round(Math.random()*100)%20];
+    let word = words[Math.round(Math.random() * 100) % 20];
 
     while (random.includes(word)) {
-      word = words[Math.round(Math.random()*100)%20];
+      word = words[Math.round(Math.random() * 100) % 20];
     }
 
     random.push(word);
@@ -91,40 +91,49 @@ io.on("connection", function(socket: Socket) {
   let leftDrawer: number = null;
   let rightDrawer: number = null;
 
-  
-  type drawingMessage={
-    room:string;
-    side:string;
-  }
+  type drawingMessage = {
+    room: string;
+    side: string;
+  };
 
   socket.on("coordinates", function(message: drawingMessage) {
-    io.to(`${rooms[message.room].players[0][0].id}`).emit(`coordinates${message.side}`, message);
+    io.to(`${rooms[message.room].players[0][0].id}`).emit(
+      `coordinates${message.side}`,
+      message
+    );
   });
 
   socket.on("clear", function(message: drawingMessage) {
-    io.to(`${rooms[message.room].players[0][0].id}`).emit(`clear${message.side}`, message);
+    io.to(`${rooms[message.room].players[0][0].id}`).emit(
+      `clear${message.side}`,
+      message
+    );
   });
 
   socket.on("stop", function(message: drawingMessage) {
-    io.to(`${rooms[message.room].players[0][0].id}`).emit(`stop${message.side}`, message);
+    io.to(`${rooms[message.room].players[0][0].id}`).emit(
+      `stop${message.side}`,
+      message
+    );
   });
-  
+
   socket.on("SETUP", () => {
     let message = {
       code: generateCode(),
       playerId: 0
     };
 
-    rooms[message.code] = { 
-      players: [{ 0: { id: socket.id, name: "MAIN", score: 0, correct: false } }],
+    rooms[message.code] = {
+      players: [
+        { 0: { id: socket.id, name: "MAIN", score: 0, correct: false } }
+      ],
       words: [],
-      word: null 
+      word: null
     };
-    
+
     socket.emit("ROOM_CREATED", message);
     socket.join(message.code);
   });
-
 
   socket.on("JOIN", (message: any) => {
     if (!rooms[message.code]) {
@@ -140,16 +149,21 @@ io.on("connection", function(socket: Socket) {
     } else {
       const playerId = rooms[message.code].players.length;
       const playerName = message.name;
-      rooms[message.code].players.push({ [playerId]: { id: socket.id, name: playerName, score: 0, correct: false } });
+      rooms[message.code].players.push({
+        [playerId]: {
+          id: socket.id,
+          name: playerName,
+          score: 0,
+          correct: false
+        }
+      });
 
       const outMessage = {
         playerId
       };
       socket.emit("ROOM_JOINED", outMessage);
       socket.join(message.code, function() {
-
         const players = rooms[message.code].players.map((player: any) => {
-
           return {
             id: Object.keys(player)[0],
             name: player[Object.keys(player)[0]].name
@@ -166,7 +180,7 @@ io.on("connection", function(socket: Socket) {
 
   socket.on("START_GAME", (message: any) => {
     const timer = 5;
-    
+
     players = rooms[message.code].players.slice(1);
     rooms[message.code].words = generateRandomWords(players.length);
     rooms[message.code].word = 0;
@@ -186,7 +200,7 @@ io.on("connection", function(socket: Socket) {
       leftDrawer,
       rightDrawer,
       word
-    }
+    };
 
     io.sockets.in(message.code).emit("STARTING_GAME", outMessage);
 
@@ -200,7 +214,7 @@ io.on("connection", function(socket: Socket) {
 
     const outMessage = {
       playerId: message.playerId
-    }
+    };
 
     io.sockets.in(message.code).emit("UPDATE_SCORE", outMessage);
   });
@@ -243,7 +257,7 @@ io.on("connection", function(socket: Socket) {
       leftDrawer,
       rightDrawer,
       word
-    }
+    };
 
     io.in(code).emit("ROUND_OVER", outMessage);
 
