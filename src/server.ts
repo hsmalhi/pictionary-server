@@ -2,9 +2,6 @@
 import * as express from "express";
 import { Socket } from "socket.io";
 
-import * as socketio from "socket.io";
-import * as path from "path";
-
 const app = express();
 app.set("port", process.env.PORT || 3001);
 
@@ -15,28 +12,7 @@ let io = require("socket.io")(http);
 
 let rooms: any = {};
 
-let words: string[] = [
-  "star wars",
-  "battle ship",
-  "swimming pool",
-  "bus stop",
-  "fire fly",
-  "tooth paste",
-  "egg rolls",
-  "full moon",
-  "black board",
-  "washing machine",
-  "sun rise",
-  "hair style",
-  "news paper",
-  "door handle",
-  "air plane",
-  "scare crow",
-  "post office",
-  "under world",
-  "bed room",
-  "christmas tree"
-];
+import words from "./words";
 
 const generateCode = function(): string {
   let code: string = "";
