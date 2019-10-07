@@ -186,11 +186,14 @@ io.on("connection", function(socket: Socket) {
   });
 
   socket.on("SCORE", (message: any) => {
-    rooms[message.code].players[message.playerId][message.playerId].score++;
+    rooms[message.code].players[message.playerId][message.playerId].score += message.points;
 
     const outMessage = {
-      playerId: message.playerId
+      playerId: message.playerId,
+      points: message.points
     };
+
+    console.log(outMessage.points);
 
     io.sockets.in(message.code).emit("UPDATE_SCORE", outMessage);
   });
