@@ -164,6 +164,25 @@ io.on("connection", function(socket: Socket) {
   });
 
   socket.on("START_GAME", (message: any) => {
+
+
+    let players = rooms[message.code].players.map((player: any) => {
+      console.log(Object.keys(player)[0])
+      console.log(player[Object.keys(player)[0]].name)
+      
+      return {
+        id: Object.keys(player)[0],
+        name: player[Object.keys(player)[0]].name
+      };
+    });
+
+    const roomMessage = {
+      players
+    };
+    io.in(message.code).emit("PLAYER_UPDATE", roomMessage);
+    console.log(roomMessage.players)
+
+
     const timer = 5;
 
     players = rooms[message.code].players.slice(1);
