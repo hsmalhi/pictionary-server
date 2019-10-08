@@ -122,6 +122,11 @@ io.on("connection", function(socket: Socket) {
         error: "This room has reached maximum capacity"
       };
       socket.emit("ROOM_JOINED", outMessage);
+    } else if (rooms[message.code].word != null) {
+      const outMessage = {
+        error: "This game is already in progress"
+      };
+      socket.emit("ROOM_JOINED", outMessage);
     } else {
       const playerId = rooms[message.code].players.length;
       const playerName = message.name;
@@ -187,11 +192,14 @@ io.on("connection", function(socket: Socket) {
   });
 
   socket.on("SCORE", (message: any) => {
-    rooms[message.code].players[message.playerId][message.playerId].score++;
+    rooms[message.code].players[message.playerId][message.playerId].score += message.points;
 
     const outMessage = {
-      playerId: message.playerId
+      playerId: message.playerId,
+      points: message.points
     };
+
+    console.log(outMessage.points);
 
     io.sockets.in(message.code).emit("UPDATE_SCORE", outMessage);
   });
