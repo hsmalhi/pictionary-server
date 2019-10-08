@@ -144,7 +144,7 @@ io.on("connection", function(socket: Socket) {
       };
       socket.emit("ROOM_JOINED", outMessage);
       socket.join(message.code, function() {
-        const players = rooms[message.code].players.map((player: any) => {
+        const p = rooms[message.code].players.map((player: any) => {
           console.log(Object.keys(player)[0])
           console.log(player[Object.keys(player)[0]].name)
           
@@ -155,10 +155,10 @@ io.on("connection", function(socket: Socket) {
         });
 
         const roomMessage = {
-          players
+          p
         };
         io.in(message.code).emit("PLAYER_UPDATE", roomMessage);
-        console.log(roomMessage.players)
+        console.log(roomMessage.p)
       });
     }
   });
