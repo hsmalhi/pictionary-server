@@ -150,6 +150,7 @@ io.on("connection", function(socket: Socket) {
           players
         };
         io.in(message.code).emit("PLAYER_UPDATE", roomMessage);
+        console.log(roomMessage.players)
       });
     }
   });
