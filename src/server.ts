@@ -122,6 +122,11 @@ io.on("connection", function(socket: Socket) {
         error: "This room has reached maximum capacity"
       };
       socket.emit("ROOM_JOINED", outMessage);
+    } else if (rooms[message.code].word != null) {
+      const outMessage = {
+        error: "This game is already in progress"
+      };
+      socket.emit("ROOM_JOINED", outMessage);
     } else {
       const playerId = rooms[message.code].players.length;
       const playerName = message.name;
