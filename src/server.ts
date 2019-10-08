@@ -136,7 +136,7 @@ io.on("connection", function(socket: Socket) {
           name: playerName,
           score: 0,
           correct: false
-        }
+        } 
       });
 
       const outMessage = {
@@ -166,7 +166,7 @@ io.on("connection", function(socket: Socket) {
   socket.on("START_GAME", (message: any) => {
 
 
-    let players = rooms[message.code].players.map((player: any) => {
+    const p = rooms[message.code].players.map((player: any) => {
       console.log(Object.keys(player)[0])
       console.log(player[Object.keys(player)[0]].name)
       
@@ -177,10 +177,10 @@ io.on("connection", function(socket: Socket) {
     });
 
     const roomMessage = {
-      players
+      p
     };
     io.in(message.code).emit("PLAYER_UPDATE", roomMessage);
-    console.log(roomMessage.players)
+    console.log(roomMessage.p)
 
 
     const timer = 5;
