@@ -226,6 +226,12 @@ io.on("connection", function(socket: Socket) {
     io.sockets.in(message.code).emit("UPDATE_SCORE", outMessage);
   });
 
+  socket.on("SKIP", (message: any) => {
+    setTimeout(() => {
+      endRound(message.code);
+    }, 5000)
+  });
+
   socket.on("RESTART_SERVER", (message: any) => {
     const players = rooms[message.code].players.map((player: any) => {
       return {
