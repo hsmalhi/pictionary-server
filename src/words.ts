@@ -1,6 +1,5 @@
 const words: string[] = [
   "battle ship",
-  "swimming pool",
   "bus stop",
   "fire fly",
   "tooth paste",
@@ -8,7 +7,6 @@ const words: string[] = [
   "door knob",
   "air plane",
   "world peace",
-  "christmas tree",
   "cheese burger",
   "french fries",
   "sun glasses",
@@ -52,7 +50,6 @@ const words: string[] = [
   "waste basket",
   "head phones",
   "ear buds",
-  "Toronto Raptors",
   "water melon",
   "sail boat",
   "six pack",
